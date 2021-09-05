@@ -40,7 +40,7 @@ class WheelsStatusSchema(BaseModel):
 
 class HeadStatusSchema(BaseModel):
     status: str = 'OK'
-    yaw: float = Field(0.0, description='Head rotation angle, degrees')
+    pose: Pose = Pose()
 
 
 class ArmPoseSchema(BaseModel):
@@ -56,6 +56,7 @@ class ArmStatusSchema(BaseModel):
     gripper_effort = Field(0.0, description='???')
     weight = Field(0.0, description='The weight of the object in the gripper')
     range = Field(0.0, description='???')
+    target_pose: Pose = Pose()
     poses: List[Pose] = Field(
         [],
         description='shoulder, elbow, gripper'
@@ -75,11 +76,11 @@ _l_base = np.array([-200, 0, -100])
 _r_base = np.array([200, 0, -100])
 
 while True:
-    for st in ('ARM_OPERATING_ST',):
+    for st in ('ARM_OPERATING_ST', 'ARM_START_ST', 'DRIVE_ST', 'PAUSE_ST'):
         for i in range(100):
             alpha = i / 100 * 6.28
-            _l_arm = np.array([-200, 300, -100]) + np.array([np.cos(alpha), np.sin(alpha), 0]) * 200
-            _r_arm = np.array([200, 300, -100]) + np.array([np.cos(-alpha), np.sin(-alpha), 0]) * 99
+            _l_arm = np.array([-200, 300, -1 * i]) + np.array([np.cos(alpha), np.sin(alpha), 0]) * 200
+            _r_arm = np.array([200, 300, -1 * i]) + np.array([np.cos(-alpha), np.sin(-alpha), 0]) * 99
 
             _l_mid = (_l_base + _l_arm) * 0.5
             _r_mid = (_r_base + _r_arm) * 0.5
@@ -95,7 +96,7 @@ while True:
                 },
                 head={
                     'status': 'OK',
-                    'yaw': i / 100 * 180 - 90
+                    'pose': {'rot': {'y': i / 100 * 180 - 90}}
                 },
                 arms=[
                     {
@@ -104,6 +105,7 @@ while True:
                         'gripper_effort': i / 100,
                         'range': i / 100,
                         'weight': i * 8,
+                        'target_pose': {'pos': {k: v*1.01 for k, v in zip('xyz', _l_arm)}, 'rot': {}},
                         'poses': [
                             {'pos': {k: v for k, v in zip('xyz', _l_base)}, 'rot': {}},
                             {'pos': {k:v for k, v in zip('xyz', _l_mid)}, 'rot': {}},
@@ -117,6 +119,7 @@ while True:
                         'gripper_effort': i / 100,
                         'range': i / 100,
                         'weight': i * 8,
+                        'target_pose': {'pos': {k: v*1.01 for k, v in zip('xyz', _r_arm)}, 'rot': {}},
                         'poses': [
                             {'pos': {k: v for k, v in zip('xyz', _r_base)}, 'rot': {}},
                             {'pos': {k:v for k, v in zip('xyz', _r_mid)}, 'rot': {}},
