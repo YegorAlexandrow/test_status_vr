@@ -1,3 +1,4 @@
 pydantic
 redis
 numpy
+cv2

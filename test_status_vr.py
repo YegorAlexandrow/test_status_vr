@@ -76,7 +76,7 @@ _l_base = np.array([-200, 0, -100])
 _r_base = np.array([200, 0, -100])
 
 while True:
-    for st in ('ARM_OPERATING_ST', 'ARM_START_ST', 'DRIVE_ST', 'PAUSE_ST'):
+    for st in ('ARM_OPERATING_ST',):
         for i in range(100):
             alpha = i / 100 * 6.28
             _l_arm = np.array([-200, 300, -1 * i]) + np.array([np.cos(alpha), np.sin(alpha), 0]) * 200
